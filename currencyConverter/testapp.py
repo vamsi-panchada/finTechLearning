@@ -25,15 +25,31 @@ l2 = l1.copy()
 l2.remove(cur1)
 cur2 = curcol2.selectbox('list2', l2)
 
-val1 = valcol1.number_input('Enter number1')
-val2 = valcol2.number_input('Enter number2')
+valEmp1 = valcol1.empty()
+valEmp2 = valcol2.empty()
 
-if val1>0:
-    val2 = val1*int(cur1)
-    # st.write('inside val1')
-if val2>0:
-    val1 = val2/int(cur2)
-    # st.write('inside val2')
+val1 = valEmp1.number_input('Enter number1', value=1, step=1)
+val2 = valEmp2.number_input('Enter number2', value=1*int(cur1), step=1)
+
+# if val1>0:
+#     val2 = val1*int(cur1)
+#     # st.write('inside val1')
+# if val2>0:
+#     val1 = val2/int(cur2)
+#     # st.write('inside val2')
+
+if 'previous_input' not in st.session_state:
+    st.session_state.previous_input = None
+
+if st.session_state.previous_input != val1:
+    res = val1*int(cur1)
+    val2 = valEmp2.number_input(f'{val1} * {cur1}', value=res, step=1)
+    # val1 = valEmp1.number_input('Enter number1', value=val1, step=1)
+
+elif st.session_state.previous_input != val2:
+    res = val2/int(cur2)
+    val1 = valEmp1.number_input(f'{val2} / {cur2}', value=res, step=1.0)
+    # val2 = valEmp2.number_input('Enter number2', value=val2, step=1)
 
 st.write(f'{val1} --> {val2}')
 
