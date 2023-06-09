@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 
+
 country_codes = {
     "Afghan Afghani": "AFN",
     "Albanian Lek": "ALL",
@@ -165,44 +166,69 @@ country_codes = {
     "Zimbabwean Dollar": "ZWL",
 }
 
-countryList = list(country_codes.keys())
+def getRates(fromCode, toCode):
+    url = f'https://api.exchangerate-api.com/v4/latest/{fromCode}'
+    response = requests.get(url).json()
+    return response['rates'][f'{toCode}']
+
 
 
 def converter():
-    st.header('Currency Converter application')
-    fromCode = st.selectbox('From : ', countryList)
-    toCodesList = countryList.copy()
-    toCodesList.remove(fromCode)
+    st.header('Currency Converter Application')
+    countryCurrencyList = list(country_codes)
+    converterCol, graphCol = st.columns([2, 1])
 
-    toCode = st.selectbox('To :', toCodesList)
-    amount = st.number_input('Enter amount in '+fromCode + ' :')
+    ratePosition = converterCol.empty()
+    
 
-        
-    url = f'https://api.exchangerate-api.com/v4/latest/{country_codes[fromCode]}'
-    response = requests.get(url).json()
-    rate = response['rates'][f'{country_codes[toCode]}']
-    result = amount*round(rate, 2)
-    st.header('Result:')
-    st.header(f'{amount} {fromCode} equals to {result} {toCode}')
+    #convertion Column code
+
+    currencyCol, valueCol = converterCol.columns([2,1])
+
+    fromCurrencyPosition = currencyCol.empty()
+    toCurrencyPosition = currencyCol.empty()
+
+    fromValuePosition = valueCol.empty()
+    toValuePosition = valueCol.empty()
+
+    fromCurrency = fromCurrencyPosition.selectbox('From Currency: ', countryCurrencyList)
+    toCountryCurrencyList = countryCurrencyList.copy()
+    toCountryCurrencyList.remove(fromCurrency)
+    toCurrency = toCurrencyPosition.selectbox('To Currency: ', toCountryCurrencyList)
+
+    rate = getRates(country_codes[fromCurrency], country_codes[toCurrency])
+
+    rateText = f'<p style="font-family:sans-serif; color:Black; font-size: 22px;"><br>1 {fromCurrency} is equals to </br>{round(rate, 4)} {toCurrency}</p>'
+    ratePosition.markdown(rateText, unsafe_allow_html=True)
+
+    fromValue = fromValuePosition.number_input(f'Enter Value in {country_codes[fromCurrency]}: ', value=1.0, min_value=0.0, step=1.0)
+    toValuePosition.markdown(f'<br><p style="font-family:Arial; font-size: 20px;">{round(fromValue*rate, 3)} {country_codes[toCurrency]}</p></br>', unsafe_allow_html=True)
+
+
+
+
 
 
 def predictor():
-    st.write('predictor app is under processing.')
-    pass
+    st.header('Currency Rate Prediction Application')
+    st.markdown('Application is still developing... check here later')
+
 
 
 def main():
-    st.sidebar.header('Currency Converter and Rate Predictor App')
-    opt = st.sidebar.selectbox('Select an option: ', ['Converter', 'Prediction'])
-    if opt == 'Converter':
+    st.sidebar.header('Currency Converter and predictor App')
+    option = st.sidebar.selectbox('Select an Option: ', ['Convertion', 'Prediction'])
+
+    if option == 'Convertion':
         converter()
-    elif opt == 'Prediction':
+
+    elif option == 'Prediction':
         predictor()
+
     else:
-        st.write('please select an option from sidebar.')
+        st.write('Please select an option from the left sidebar')
 
 
-if __name__ == '__main__':
+
+if __name__=='__main__':
     main()
-
-# main()
