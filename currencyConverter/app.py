@@ -1,5 +1,8 @@
 import streamlit as st
 import requests
+import yfinance as yf
+import datetime as dt
+import plotly.express as px
 
 
 country_codes = {
@@ -167,7 +170,8 @@ country_codes = {
 }
 
 def getRates(fromCode, toCode):
-    url = f'https://api.exchangerate-api.com/v4/latest/{fromCode}'
+    url = f'https://open.er-api.com/v6/latest/{fromCode}'
+    # https://open.er-api.com/v6/latest/USD
     response = requests.get(url).json()
     return response['rates'][f'{toCode}']
 
@@ -203,6 +207,22 @@ def converter():
 
     fromValue = fromValuePosition.number_input(f'Enter Value in {country_codes[fromCurrency]}: ', value=1.0, min_value=0.0, step=1.0)
     toValuePosition.markdown(f'<br><p style="font-family:Arial; font-size: 20px;">{round(fromValue*rate, 3)} {country_codes[toCurrency]}</p></br>', unsafe_allow_html=True)
+
+
+    # Graph Element code
+
+    data = yf.download(f'{country_codes[fromCurrency]}{country_codes[toCurrency]}=x', start=dt.date.today()-dt.timedelta(days=100), end=dt.date.today()+dt.timedelta(days=1))
+    data['Rate']=data['Close']
+
+    fig = px.line(data['Rate'], markers=True)
+    fig.update_layout(
+        title=f'{country_codes[fromCurrency]}vs{country_codes[toCurrency]}',
+        xaxis_title="Date",
+        yaxis_title="Rate",
+        legend_title="legend",
+        font=dict(family="Arial", size=20, color="green")
+        )
+    st.plotly_chart(fig, use_container_width=False)
 
 
 

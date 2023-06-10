@@ -24,15 +24,23 @@
 
 import yfinance as  yf
 import streamlit as st
-# import plotly.express as px
+import plotly.express as px
 import plotly.graph_objects as go
 import datetime as dt
 
 
-data = yf.download('USDINR=X', start=dt.date.today()-dt.timedelta(days=30), end=dt.date.today()+dt.timedelta(days=1))
+data = yf.download('USDINR=X', start=dt.date.today()-dt.timedelta(days=100), end=dt.date.today()+dt.timedelta(days=1))
+data['Rate'] = data['Close']
 
-# fig = px.line(data['Close'], markers=True)
-# st.plotly_chart(fig, use_container_width=True)
+fig = px.line(data['Rate'], markers=True)
+fig.update_layout(
+   title="My plot",
+   xaxis_title="Date",
+   yaxis_title="Rate",
+   legend_title="Index",
+   font=dict(family="Arial", size=20, color="green")
+)
+st.plotly_chart(fig, use_container_width=True)
 
 
 # fig = go.Figure(data=go.Line(data['Close'], mode='markers'))
@@ -59,62 +67,62 @@ data = yf.download('USDINR=X', start=dt.date.today()-dt.timedelta(days=30), end=
 # fig.show()
 
 
-import plotly.graph_objects as go
-from plotly.offline import init_notebook_mode, iplot
-init_notebook_mode(connected=True)
+# import plotly.graph_objects as go
+# from plotly.offline import init_notebook_mode, iplot
+# init_notebook_mode(connected=True)
 
-# Create some example data
-x = [1, 2, 3, 4, 5]
-y = [10, 15, 13, 17, 12]
+# # Create some example data
+# x = [1, 2, 3, 4, 5]
+# y = [10, 15, 13, 17, 12]
 
-# Create a line trace
-trace = go.Scatter(x=x, y=y, mode='lines')
+# # Create a line trace
+# trace = go.Scatter(x=x, y=y, mode='lines')
 
-# Create the figure
-fig = go.Figure(data=trace)
+# # Create the figure
+# fig = go.Figure(data=trace)
 
-# Add a vertical line shape
-fig.update_layout(
-    shapes=[
-        dict(
-            type='line',
-            x0=3,
-            y0=min(y),
-            x1=3,
-            y1=max(y),
-            line=dict(color='red', width=2),
-            xref='x',
-            yref='y',
-            name='vertical_line'
-        )
-    ]
-)
+# # Add a vertical line shape
+# fig.update_layout(
+#     shapes=[
+#         dict(
+#             type='line',
+#             x0=3,
+#             y0=min(y),
+#             x1=3,
+#             y1=max(y),
+#             line=dict(color='red', width=2),
+#             xref='x',
+#             yref='y',
+#             name='vertical_line'
+#         )
+#     ]
+# )
 
-# Enable the JavaScript event handling
-fig.update_layout(
-    updatemenus=[
-        dict(
-            type="buttons",
-            buttons=[
-                dict(
-                    label="Enable Move",
-                    method="relayout",
-                    args=[
-                        {"updatemenus": None},
-                        {
-                            "dragmode": "x",
-                            "shapes[0].x0": True,
-                            "shapes[0].x1": True,
-                        },
-                    ],
-                )
-            ],
-        )
-    ]
-)
+# # Enable the JavaScript event handling
+# fig.update_layout(
+#     updatemenus=[
+#         dict(
+#             type="buttons",
+#             buttons=[
+#                 dict(
+#                     label="Enable Move",
+#                     method="relayout",
+#                     args=[
+#                         {"updatemenus": None},
+#                         {
+#                             "dragmode": "x",
+#                             "shapes[0].x0": True,
+#                             "shapes[0].x1": True,
+#                         },
+#                     ],
+#                 )
+#             ],
+#         )
+#     ]
+# )
 
-# Show the plot
-# iplot(fig)
+# # Show the plot
+# # iplot(fig)
 
 
-st.plotly_chart(fig, use_container_width=True)
+# st.plotly_chart(fig, use_container_width=True)
