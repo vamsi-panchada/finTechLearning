@@ -169,8 +169,10 @@ country_codes = {
     "Zimbabwean Dollar": "ZWL",
 }
 
+periodDataMapper = {'10 days': 10, '30 days': 30, '3 months': 90, '1 year': 365}
+
 def getRates(fromCode, toCode):
-    url = f'https://open.er-api.com/v6/latest/{fromCode}'
+    url = f'https://api.exchangerate-api.com/v4/latest/{fromCode}'
     # https://open.er-api.com/v6/latest/USD
     response = requests.get(url).json()
     return response['rates'][f'{toCode}']
@@ -180,7 +182,10 @@ def getRates(fromCode, toCode):
 def converter():
     st.header('Currency Converter Application')
     countryCurrencyList = list(country_codes)
-    converterCol, graphCol = st.columns([2, 1])
+    # converterCol, graphCol = st.columns([2, 1])
+
+    converterCol=st.container()
+    graphCol = st.container()
 
     ratePosition = converterCol.empty()
     
@@ -195,23 +200,44 @@ def converter():
     fromValuePosition = valueCol.empty()
     toValuePosition = valueCol.empty()
 
-    fromCurrency = fromCurrencyPosition.selectbox('From Currency: ', countryCurrencyList)
+    fromCurrency = fromCurrencyPosition.selectbox('From Currency: ', countryCurrencyList, index=countryCurrencyList.index('United States Dollar'))
     toCountryCurrencyList = countryCurrencyList.copy()
     toCountryCurrencyList.remove(fromCurrency)
-    toCurrency = toCurrencyPosition.selectbox('To Currency: ', toCountryCurrencyList)
-
-    rate = getRates(country_codes[fromCurrency], country_codes[toCurrency])
-
-    rateText = f'<p style="font-family:sans-serif; color:Black; font-size: 22px;"><br>1 {fromCurrency} is equals to </br>{round(rate, 4)} {toCurrency}</p>'
-    ratePosition.markdown(rateText, unsafe_allow_html=True)
+    toCurrency = toCurrencyPosition.selectbox('To Currency: ', toCountryCurrencyList, index=toCountryCurrencyList.index('Indian Rupee'))
 
     fromValue = fromValuePosition.number_input(f'Enter Value in {country_codes[fromCurrency]}: ', value=1.0, min_value=0.0, step=1.0)
-    toValuePosition.markdown(f'<br><p style="font-family:Arial; font-size: 20px;">{round(fromValue*rate, 3)} {country_codes[toCurrency]}</p></br>', unsafe_allow_html=True)
+
+    if 'fromCurrency' not in st.session_state:
+
+        rate = getRates(country_codes[fromCurrency], country_codes[toCurrency])
+
+        rateText = f'<p style="font-family:sans-serif; color:Black; font-size: 22px;"><br>1 {fromCurrency} is equals to </br>{round(rate, 4)} {toCurrency}</p>'
+        ratePosition.markdown(rateText, unsafe_allow_html=True)
+
+        toValuePosition.markdown(f'<br><p style="font-family:Arial; font-size: 20px;">{round(fromValue*rate, 3)} {country_codes[toCurrency]}</p></br>', unsafe_allow_html=True)
+
+        st.session_state.fromCurrency = fromCurrency
+        st.session_state.toCurrency = toCurrency
+        st.session_state.fromValue = fromValue
+        st.session_state.rate = rate
+
+    if st.session_state.fromValue != fromValue and (st.session_state.fromCurrency==fromCurrency and st.session_state.toCurrency==toCurrency):
+
+        toValuePosition.markdown(f'<br><p style="font-family:Arial; font-size: 20px;">{round(fromValue*rate, 3)} {country_codes[toCurrency]}</p></br>', unsafe_allow_html=True)
+
+        st.session_state.fromValue = fromValue
+        
+
+
 
 
     # Graph Element code
+    periodPosition = graphCol.empty()
+    graphPosition = graphCol.empty()
 
-    data = yf.download(f'{country_codes[fromCurrency]}{country_codes[toCurrency]}=x', start=dt.date.today()-dt.timedelta(days=100), end=dt.date.today()+dt.timedelta(days=1))
+    period = periodPosition.radio('Select a period to generate Graph', ['10 days', '30 days', '3 months', '1 year'], index=0, horizontal=True)
+
+    data = yf.download(f'{country_codes[fromCurrency]}{country_codes[toCurrency]}=x', start=dt.date.today()-dt.timedelta(days=periodDataMapper[period]), end=dt.date.today()+dt.timedelta(days=1))
     data['Rate']=data['Close']
 
     fig = px.line(data['Rate'], markers=True)
@@ -222,7 +248,7 @@ def converter():
         legend_title="legend",
         font=dict(family="Arial", size=20, color="green")
         )
-    st.plotly_chart(fig, use_container_width=False)
+    graphPosition.plotly_chart(fig, use_container_width=False)
 
 
 
